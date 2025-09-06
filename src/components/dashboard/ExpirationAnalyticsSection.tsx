@@ -6,6 +6,8 @@ import { MetricCard } from './MetricCard';
 import { UnifiedTopBottomSellers } from './UnifiedTopBottomSellers';
 import { ModernDrillDownModal } from './ModernDrillDownModal';
 import { NoteTaker } from '@/components/ui/NoteTaker';
+import { ExpirationChartsGrid } from './ExpirationChartsGrid';
+import { ExpirationDataTables } from './ExpirationDataTables';
 import { ExpirationData, ExpirationFilterOptions, MetricCardData } from '@/types/dashboard';
 import { formatNumber, formatPercentage } from '@/utils/formatters';
 import { getPreviousMonthDateRange } from '@/utils/dateUtils';
@@ -253,6 +255,9 @@ export const ExpirationAnalyticsSection: React.FC<ExpirationAnalyticsSectionProp
                   ))}
                 </div>
 
+                {/* Charts Grid */}
+                <ExpirationChartsGrid data={filteredData} />
+
                 {/* Top/Bottom Lists */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <Card className="bg-white/70 backdrop-blur-sm border-slate-200/50">
@@ -294,50 +299,11 @@ export const ExpirationAnalyticsSection: React.FC<ExpirationAnalyticsSectionProp
                   </Card>
                 </div>
 
-                {/* Data Table */}
-                <Card className="bg-white/70 backdrop-blur-sm border-slate-200/50">
-                  <CardHeader>
-                    <CardTitle className="text-lg font-semibold bg-gradient-to-r from-slate-700 to-slate-500 bg-clip-text text-transparent">
-                      Expirations Detail
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-slate-200">
-                            <th className="text-left py-2 px-3 font-medium text-slate-700">Member</th>
-                            <th className="text-left py-2 px-3 font-medium text-slate-700">Email</th>
-                            <th className="text-left py-2 px-3 font-medium text-slate-700">Membership</th>
-                            <th className="text-left py-2 px-3 font-medium text-slate-700">End Date</th>
-                            <th className="text-left py-2 px-3 font-medium text-slate-700">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredData.slice(0, 50).map((item, index) => (
-                            <tr key={index} className="border-b border-slate-100 hover:bg-slate-50/50 cursor-pointer"
-                                onClick={() => handleRowClick([item], 'member')}>
-                              <td className="py-2 px-3">{`${item.firstName} ${item.lastName}`}</td>
-                              <td className="py-2 px-3 text-slate-600">{item.email}</td>
-                              <td className="py-2 px-3">{item.membershipName}</td>
-                              <td className="py-2 px-3">{item.endDate}</td>
-                              <td className="py-2 px-3">
-                                <span className={cn(
-                                  "px-2 py-1 rounded-full text-xs font-medium",
-                                  item.status === 'Expired' ? "bg-red-100 text-red-800" :
-                                  item.status === 'Expiring This Month' ? "bg-yellow-100 text-yellow-800" :
-                                  "bg-green-100 text-green-800"
-                                )}>
-                                  {item.status}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* Data Tables */}
+                <ExpirationDataTables 
+                  data={filteredData} 
+                  onRowClick={(item) => handleRowClick([item], 'member')} 
+                />
               </div>
             </TabsContent>
           ))}

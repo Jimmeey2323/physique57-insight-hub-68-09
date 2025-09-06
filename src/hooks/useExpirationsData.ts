@@ -47,17 +47,36 @@ export const useExpirationsData = () => {
       const accessToken = await getAccessToken();
       console.log('✅ Access token obtained successfully');
       
-      const response = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Sheet1?alt=json`,
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          },
+      // Try different possible sheet names
+      const possibleSheetNames = ['Expirations', 'Expiration', 'Members', 'Sheet1', 'Data'];
+      let response;
+      let sheetName = '';
+      
+      for (const name of possibleSheetNames) {
+        try {
+          console.log(`🔍 Trying sheet name: ${name}`);
+          response = await fetch(
+            `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${name}?alt=json`,
+            {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+              },
+            }
+          );
+          
+          if (response.ok) {
+            sheetName = name;
+            console.log(`✅ Successfully found sheet: ${name}`);
+            break;
+          }
+        } catch (sheetError) {
+          console.log(`❌ Sheet ${name} not found, trying next...`);
+          continue;
         }
-      );
+      }
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch expirations data: ${response.status} ${response.statusText}`);
+      if (!response || !response.ok) {
+        throw new Error(`Failed to fetch expirations data from any sheet. Tried: ${possibleSheetNames.join(', ')}`);
       }
 
       const result = await response.json();
