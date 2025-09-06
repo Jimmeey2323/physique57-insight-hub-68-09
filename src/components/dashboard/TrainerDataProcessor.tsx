@@ -102,9 +102,10 @@ export const processTrainerData = (payrollData: PayrollData[]): ProcessedTrainer
     const revenuePerSession = totalSessions > 0 ? totalPaid / totalSessions : 0;
     const revenuePerCustomer = totalCustomers > 0 ? totalPaid / totalCustomers : 0;
 
-    // Mock growth rate and consistency score (would need historical data)
-    const growthRate = Math.random() * 20 - 10; // Mock -10% to +10%
-    const consistencyScore = Math.random() * 40 + 60; // Mock 60-100%
+    // Growth rate and consistency score calculations
+    // Note: These require historical data for accurate calculation
+    const growthRate = 0; // Set to 0 until historical data is available
+    const consistencyScore = Math.min(100, ((totalNonEmptySessions / Math.max(totalSessions, 1)) * 100)); // Based on fill rate
 
     return {
       trainerId: record.teacherId,
