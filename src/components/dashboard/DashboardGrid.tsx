@@ -98,6 +98,14 @@ export const DashboardGrid: React.FC<DashboardGridProps> = ({ onButtonClick }) =
       icon: Activity,
       color: 'from-violet-500 to-violet-600',
       hoverColor: 'hover:from-violet-600 hover:to-violet-700'
+    },
+    {
+      id: 'expiration-analytics',
+      title: 'Expirations & Churn',
+      description: 'Membership expirations and customer retention analysis',
+      icon: Calendar,
+      color: 'from-amber-500 to-amber-600',
+      hoverColor: 'hover:from-amber-600 hover:to-amber-700'
     }
   ];
 
