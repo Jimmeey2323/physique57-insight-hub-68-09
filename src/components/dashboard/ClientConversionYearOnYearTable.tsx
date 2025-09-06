@@ -29,13 +29,19 @@ export const ClientConversionYearOnYearTable: React.FC<ClientConversionYearOnYea
           acc[key] = {
             month: monthName,
             sortOrder: month,
-            currentYear: { newMembers: 0, converted: 0, retained: 0, totalLTV: 0 },
-            previousYear: { newMembers: 0, converted: 0, retained: 0, totalLTV: 0 }
+            currentYear: { totalClients: 0, newMembers: 0, converted: 0, retained: 0, totalLTV: 0 },
+            previousYear: { totalClients: 0, newMembers: 0, converted: 0, retained: 0, totalLTV: 0 }
           };
         }
         
         const yearData = year === currentYear ? acc[key].currentYear : acc[key].previousYear;
-        yearData.newMembers++;
+        yearData.totalClients++;
+        
+        // Count new members - only when isNew contains "New" (case sensitive)
+        if ((client.isNew || '').includes('New')) {
+          yearData.newMembers++;
+        }
+        
         if (client.conversionStatus === 'Converted') yearData.converted++;
         if (client.retentionStatus === 'Retained') yearData.retained++;
         yearData.totalLTV += client.ltv || 0;
@@ -48,14 +54,16 @@ export const ClientConversionYearOnYearTable: React.FC<ClientConversionYearOnYea
       .map((stat: any) => {
         const currentConversionRate = stat.currentYear.newMembers > 0 ? (stat.currentYear.converted / stat.currentYear.newMembers) * 100 : 0;
         const previousConversionRate = stat.previousYear.newMembers > 0 ? (stat.previousYear.converted / stat.previousYear.newMembers) * 100 : 0;
-        const currentRetentionRate = stat.currentYear.newMembers > 0 ? (stat.currentYear.retained / stat.currentYear.newMembers) * 100 : 0;
-        const previousRetentionRate = stat.previousYear.newMembers > 0 ? (stat.previousYear.retained / stat.previousYear.newMembers) * 100 : 0;
-        const currentAvgLTV = stat.currentYear.newMembers > 0 ? stat.currentYear.totalLTV / stat.currentYear.newMembers : 0;
-        const previousAvgLTV = stat.previousYear.newMembers > 0 ? stat.previousYear.totalLTV / stat.previousYear.newMembers : 0;
+        const currentRetentionRate = stat.currentYear.totalClients > 0 ? (stat.currentYear.retained / stat.currentYear.totalClients) * 100 : 0;
+        const previousRetentionRate = stat.previousYear.totalClients > 0 ? (stat.previousYear.retained / stat.previousYear.totalClients) * 100 : 0;
+        const currentAvgLTV = stat.currentYear.totalClients > 0 ? stat.currentYear.totalLTV / stat.currentYear.totalClients : 0;
+        const previousAvgLTV = stat.previousYear.totalClients > 0 ? stat.previousYear.totalLTV / stat.previousYear.totalClients : 0;
 
         return {
           month: stat.month,
           sortOrder: stat.sortOrder,
+          currentTotalClients: stat.currentYear.totalClients,
+          previousTotalClients: stat.previousYear.totalClients,
           currentNewMembers: stat.currentYear.newMembers,
           previousNewMembers: stat.previousYear.newMembers,
           newMembersGrowth: stat.previousYear.newMembers > 0 ? ((stat.currentYear.newMembers - stat.previousYear.newMembers) / stat.previousYear.newMembers) * 100 : 0,
@@ -84,6 +92,18 @@ export const ClientConversionYearOnYearTable: React.FC<ClientConversionYearOnYea
       key: 'month' as const,
       header: 'Month',
       className: 'font-semibold min-w-[80px]'
+    },
+    {
+      key: 'currentTotalClients' as const,
+      header: `${new Date().getFullYear()} Total`,
+      align: 'center' as const,
+      render: (value: number) => <span className="font-semibold text-slate-600">{formatNumber(value)}</span>
+    },
+    {
+      key: 'previousTotalClients' as const,
+      header: `${new Date().getFullYear() - 1} Total`,
+      align: 'center' as const,
+      render: (value: number) => <span className="font-semibold text-slate-500">{formatNumber(value)}</span>
     },
     {
       key: 'currentNewMembers' as const,
@@ -165,14 +185,16 @@ export const ClientConversionYearOnYearTable: React.FC<ClientConversionYearOnYea
   // Calculate totals
   const totals = {
     month: 'TOTAL',
+    currentTotalClients: yearOnYearData.reduce((sum, row) => sum + row.currentTotalClients, 0),
+    previousTotalClients: yearOnYearData.reduce((sum, row) => sum + row.previousTotalClients, 0),
     currentNewMembers: yearOnYearData.reduce((sum, row) => sum + row.currentNewMembers, 0),
     previousNewMembers: yearOnYearData.reduce((sum, row) => sum + row.previousNewMembers, 0),
     newMembersGrowth: 0,
     currentConversionRate: 0,
     previousConversionRate: 0,
     conversionRateGrowth: 0,
-    currentAvgLTV: yearOnYearData.reduce((sum, row) => sum + row.currentTotalLTV, 0) / yearOnYearData.reduce((sum, row) => sum + row.currentNewMembers, 1),
-    previousAvgLTV: yearOnYearData.reduce((sum, row) => sum + row.previousTotalLTV, 0) / yearOnYearData.reduce((sum, row) => sum + row.previousNewMembers, 1),
+    currentAvgLTV: yearOnYearData.reduce((sum, row) => sum + row.currentTotalLTV, 0) / yearOnYearData.reduce((sum, row) => sum + row.currentTotalClients, 1),
+    previousAvgLTV: yearOnYearData.reduce((sum, row) => sum + row.previousTotalLTV, 0) / yearOnYearData.reduce((sum, row) => sum + row.previousTotalClients, 1),
     avgLTVGrowth: 0
   };
 
