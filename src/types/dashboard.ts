@@ -297,12 +297,42 @@ export interface LateCancellationsFilterOptions {
   productType: string[];
 }
 
+export interface ExpirationData {
+  uniqueId: string;
+  memberId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  membershipName: string;
+  endDate: string;
+  homeLocation: string;
+  currentUsage: string;
+  id: string;
+  orderAt: string;
+  soldBy: string;
+  membershipId: string;
+  frozen: boolean;
+  paid: string;
+  status: string;
+}
+
+export interface ExpirationFilterOptions {
+  dateRange: {
+    start: string;
+    end: string;
+  };
+  location: string[];
+  status: string[];
+  membershipType: string[];
+  soldBy: string[];
+}
+
 export interface DrillDownModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
   data: any[];
-  type: 'product' | 'category' | 'paymentMethod' | 'metric' | 'member' | 'soldBy' | 'client-conversion' | 'trainer' | 'location';
+  type: 'product' | 'category' | 'paymentMethod' | 'metric' | 'member' | 'soldBy' | 'client-conversion' | 'trainer' | 'location' | 'expiration';
   columns: Array<{
     key: string;
     header: string;
