@@ -143,60 +143,8 @@ export const useLateCancellationsData = () => {
       setError(null);
     } catch (err) {
       console.error('Error fetching late cancellations data:', err);
-      
-      // Provide mock data for development/testing when API is not accessible
-      const mockData: LateCancellationsData[] = [
-        {
-          memberId: "17253736",
-          firstName: "Devina",
-          lastName: "Lason",
-          email: "devina_lason@yahoo.co.in",
-          location: "Kwality House, Kemps Corner",
-          sessionName: "Studio Barre 57",
-          teacherName: "Anisha Shah",
-          cleanedProduct: "Gift Card",
-          cleanedCategory: "Others",
-          cleanedClass: "Studio Barre 57",
-          paymentMethodName: "Studio Open Barre Class",
-          dateIST: "2024-01-02",
-          dayOfWeek: "Tuesday",
-          time: "17:45:00",
-          duration: 57,
-          capacity: 20,
-          month: "January",
-          year: 2024,
-          paidAmount: 0,
-          isNew: "New - Trial Class",
-          tableType: "checkins"
-        },
-        {
-          memberId: "15339489",
-          firstName: "Namha",
-          lastName: "Adukia",
-          email: "namhaadukia@gmail.com",
-          location: "Supreme HQ, Bandra",
-          sessionName: "Power Cycle 45",
-          teacherName: "John Doe",
-          cleanedProduct: "Studio 3 Month Unlimited",
-          cleanedCategory: "Membership",
-          cleanedClass: "Power Cycle 45",
-          paymentMethodName: "Studio 3 Month Unlimited Membership",
-          dateIST: "2024-01-03",
-          dayOfWeek: "Wednesday",
-          time: "18:00:00",
-          duration: 45,
-          capacity: 15,
-          month: "January",
-          year: 2024,
-          paidAmount: 48.68,
-          isNew: "New - Paid First Visit",
-          tableType: "checkins"
-        }
-      ];
-      
-      console.log('Using mock late cancellations data for development');
-      setData(mockData);
-      setError(null); // Don't set error when using mock data
+      setError('Failed to load late cancellations data');
+      setData([]); // Clear data on error - no mock data as per requirements
     } finally {
       setLoading(false);
     }
