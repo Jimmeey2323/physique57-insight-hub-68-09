@@ -204,10 +204,15 @@ export const AutoCloseFilterSection: React.FC<AutoCloseFilterSectionProps> = ({
                   type="number"
                   placeholder="₹0"
                   value={tempFilters.minAmount || ''}
-                  onChange={(e) => setTempFilters({
-                    ...tempFilters,
-                    minAmount: e.target.value ? Number(e.target.value) : undefined
-                  })}
+                  onChange={(e) => {
+                    console.log('Min amount change event:', e);
+                    if (e?.target) {
+                      setTempFilters({
+                        ...tempFilters,
+                        minAmount: e.target.value ? Number(e.target.value) : undefined
+                      });
+                    }
+                  }}
                   className="bg-white/80 backdrop-blur-sm"
                 />
               </div>
@@ -217,10 +222,15 @@ export const AutoCloseFilterSection: React.FC<AutoCloseFilterSectionProps> = ({
                   type="number"
                   placeholder="₹100,000"
                   value={tempFilters.maxAmount || ''}
-                  onChange={(e) => setTempFilters({
-                    ...tempFilters,
-                    maxAmount: e.target.value ? Number(e.target.value) : undefined
-                  })}
+                  onChange={(e) => {
+                    console.log('Max amount change event:', e);
+                    if (e?.target) {
+                      setTempFilters({
+                        ...tempFilters,
+                        maxAmount: e.target.value ? Number(e.target.value) : undefined
+                      });
+                    }
+                  }}
                   className="bg-white/80 backdrop-blur-sm"
                 />
               </div>
