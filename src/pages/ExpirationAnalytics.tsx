@@ -1,6 +1,6 @@
 import React from 'react';
 import { ExpirationAnalyticsSection } from '@/components/dashboard/ExpirationAnalyticsSection';
-import { useExpirationsDataClean } from '@/hooks/useExpirationsDataClean';
+import { useExpirationsData } from '@/hooks/useExpirationsData';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Home, Calendar } from 'lucide-react';
@@ -8,7 +8,7 @@ import { Footer } from '@/components/ui/footer';
 import { ProfessionalLoader } from '@/components/dashboard/ProfessionalLoader';
 
 const ExpirationAnalytics = () => {
-  const { data, loading, error, hasNetworkError } = useExpirationsDataClean();
+  const { data, loading, error } = useExpirationsData();
   const navigate = useNavigate();
 
   if (loading) {
@@ -21,7 +21,7 @@ const ExpirationAnalytics = () => {
         <div className="text-center space-y-4 max-w-lg">
           <h1 className="text-2xl font-bold text-red-600">Data Access Issue</h1>
           <p className="text-slate-600">{error}</p>
-          {hasNetworkError && (
+          {error.includes('Failed to fetch') && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-left">
               <h3 className="font-semibold text-amber-800 mb-2">Development Environment Note:</h3>
               <p className="text-sm text-amber-700">

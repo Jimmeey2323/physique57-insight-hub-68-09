@@ -105,7 +105,7 @@ export const processTrainerData = (payrollData: PayrollData[]): ProcessedTrainer
     // Growth rate and consistency score calculations
     // Note: These require historical data for accurate calculation
     const growthRate = 0; // Set to 0 until historical data is available
-    const consistencyScore = Math.min(100, ((totalNonEmptySessions / Math.max(totalSessions, 1)) * 100)); // Based on fill rate
+    const consistencyScore = Math.min(100, ((nonEmptySessions / Math.max(totalSessions, 1)) * 100)); // Based on fill rate
 
     return {
       trainerId: record.teacherId,

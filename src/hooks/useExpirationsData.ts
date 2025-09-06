@@ -42,12 +42,13 @@ export const useExpirationsData = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching expirations data from Google Sheets...');
+      console.log('🔍 Fetching expirations data from Google Sheets API...');
+      
       const accessToken = await getAccessToken();
-      console.log('Access token obtained successfully');
+      console.log('✅ Access token obtained successfully');
       
       const response = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Expirations?alt=json`,
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Sheet1?alt=json`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -56,56 +57,63 @@ export const useExpirationsData = () => {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch expirations data');
+        throw new Error(`Failed to fetch expirations data: ${response.status} ${response.statusText}`);
       }
 
       const result = await response.json();
       const rows = result.values || [];
       
+      console.log('📊 Received rows:', rows.length);
+
       if (rows.length < 2) {
+        console.log('⚠️ No data rows found');
         setData([]);
         return;
       }
 
       const headers = rows[0];
-      console.log('Sheet headers:', headers);
+      console.log('📋 Headers:', headers);
+
+      // Transform data rows (skip header)
+      const expirationsData: ExpirationData[] = [];
       
-      // Transform the raw data to match ExpirationData interface
-      const expirationsData: ExpirationData[] = rows.slice(1).map((row: any[]) => {
-        const rawItem: any = {};
-        headers.forEach((header: string, index: number) => {
-          rawItem[header] = row[index] || '';
-        });
-
-        // Transform to match ExpirationData interface with camelCase field names
-        const transformedItem: ExpirationData = {
-          uniqueId: rawItem['Unique Id'] || rawItem['uniqueId'] || '',
-          memberId: rawItem['Member ID'] || rawItem['memberId'] || '',
-          firstName: rawItem['First Name'] || rawItem['firstName'] || '',
-          lastName: rawItem['Last Name'] || rawItem['lastName'] || '',
-          email: rawItem['Email'] || rawItem['email'] || '',
-          membershipName: rawItem['Membership Name'] || rawItem['membershipName'] || '',
-          endDate: rawItem['End Date'] || rawItem['endDate'] || '',
-          homeLocation: rawItem['Home Location'] || rawItem['homeLocation'] || '',
-          currentUsage: rawItem['Current Usage'] || rawItem['currentUsage'] || '',
-          id: rawItem['Id'] || rawItem['id'] || '',
-          orderAt: rawItem['Order At'] || rawItem['orderAt'] || '',
-          soldBy: rawItem['Sold By'] || rawItem['soldBy'] || '',
-          membershipId: rawItem['Membership Id'] || rawItem['membershipId'] || '',
-          frozen: rawItem['Frozen'] === 'TRUE' || rawItem['frozen'] === true,
-          paid: rawItem['Paid'] || rawItem['paid'] || '',
-          status: rawItem['Status'] || rawItem['status'] || '',
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        
+        // Skip empty rows
+        if (!row || row.length === 0) continue;
+        
+        const dataRow: ExpirationData = {
+          uniqueId: row[headers.findIndex((h: string) => h === 'Unique Id')] || row[headers.findIndex((h: string) => h === 'UniqueId')] || row[headers.findIndex((h: string) => h === 'ID')] || `exp-${Date.now()}-${i}`,
+          memberId: row[headers.findIndex((h: string) => h === 'Member ID')] || row[headers.findIndex((h: string) => h === 'MemberID')] || '',
+          firstName: row[headers.findIndex((h: string) => h === 'First Name')] || row[headers.findIndex((h: string) => h === 'FirstName')] || '',
+          lastName: row[headers.findIndex((h: string) => h === 'Last Name')] || row[headers.findIndex((h: string) => h === 'LastName')] || '',
+          email: row[headers.findIndex((h: string) => h === 'Email')] || '',
+          membershipName: row[headers.findIndex((h: string) => h === 'Membership Name')] || row[headers.findIndex((h: string) => h === 'MembershipName')] || '',
+          endDate: row[headers.findIndex((h: string) => h === 'End Date')] || row[headers.findIndex((h: string) => h === 'EndDate')] || '',
+          homeLocation: row[headers.findIndex((h: string) => h === 'Home Location')] || row[headers.findIndex((h: string) => h === 'HomeLocation')] || '',
+          currentUsage: row[headers.findIndex((h: string) => h === 'Current Usage')] || row[headers.findIndex((h: string) => h === 'CurrentUsage')] || '',
+          id: row[headers.findIndex((h: string) => h === 'Id')] || row[headers.findIndex((h: string) => h === 'ID')] || '',
+          orderAt: row[headers.findIndex((h: string) => h === 'Order At')] || row[headers.findIndex((h: string) => h === 'OrderAt')] || '',
+          soldBy: row[headers.findIndex((h: string) => h === 'Sold By')] || row[headers.findIndex((h: string) => h === 'SoldBy')] || '',
+          membershipId: row[headers.findIndex((h: string) => h === 'Membership Id')] || row[headers.findIndex((h: string) => h === 'MembershipId')] || '',
+          frozen: row[headers.findIndex((h: string) => h === 'Frozen')] === 'TRUE' || row[headers.findIndex((h: string) => h === 'frozen')] === 'true' || false,
+          paid: row[headers.findIndex((h: string) => h === 'Paid')] || '',
+          status: row[headers.findIndex((h: string) => h === 'Status')] || ''
         };
+        
+        expirationsData.push(dataRow);
+      }
 
-        return transformedItem;
-      });
-
-      console.log('Transformed expirations data sample:', expirationsData.slice(0, 3));
+      console.log('✅ Successfully processed:', expirationsData.length, 'expiration records');
+      console.log('📝 Sample record:', expirationsData[0]);
+      
       setData(expirationsData);
       setError(null);
     } catch (err) {
-      console.error('Error fetching expirations data:', err);
-      setError('Failed to load expirations data');
+      console.error('💥 Error fetching expirations data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load expirations data');
+      setData([]);
     } finally {
       setLoading(false);
     }
@@ -115,5 +123,10 @@ export const useExpirationsData = () => {
     fetchExpirationsData();
   }, []);
 
-  return { data, loading, error, refetch: fetchExpirationsData };
+  return { 
+    data, 
+    loading, 
+    error: error || '', 
+    refetch: fetchExpirationsData
+  };
 };

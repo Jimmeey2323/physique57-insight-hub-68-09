@@ -201,14 +201,10 @@ export const ExpirationAnalyticsSection: React.FC<ExpirationAnalyticsSectionProp
             </h1>
             <div className="flex gap-2">
               <AdvancedExportButton 
-                data={filteredData}
-                filename="expirations-analysis"
-                title="Export Expirations Data"
+                additionalData={{ expirations: filteredData }}
+                defaultFileName="expirations-analysis"
               />
-              <NoteTaker 
-                context="expirations-analytics" 
-                defaultTitle="Expirations Analysis Notes"
-              />
+              <NoteTaker />
             </div>
           </div>
 
@@ -247,15 +243,7 @@ export const ExpirationAnalyticsSection: React.FC<ExpirationAnalyticsSectionProp
                   {metrics.map((metric, index) => (
                     <MetricCard
                       key={index}
-                      title={metric.title}
-                      value={metric.value}
-                      change={metric.change}
-                      description={metric.description}
-                      icon={
-                        metric.icon === 'Users' ? Users :
-                        metric.icon === 'AlertTriangle' ? AlertTriangle :
-                        metric.icon === 'Clock' ? Clock : Calendar
-                      }
+                      data={metric}
                       onClick={() => handleRowClick(filteredData.filter(item => {
                         if (metric.title === 'Expired') return item.status === 'Expired';
                         if (metric.title === 'Expiring This Month') return item.status === 'Expiring This Month';
@@ -361,17 +349,7 @@ export const ExpirationAnalyticsSection: React.FC<ExpirationAnalyticsSectionProp
           isOpen={!!drillDownData} 
           onClose={() => setDrillDownData(null)} 
           data={drillDownData} 
-          type={drillDownType} 
-          title={`${drillDownType === 'expiration' ? 'Expiration' : drillDownType === 'member' ? 'Member' : 'Status'} Details`}
-          columns={[
-            { key: 'firstName', header: 'First Name' },
-            { key: 'lastName', header: 'Last Name' },
-            { key: 'email', header: 'Email' },
-            { key: 'membershipName', header: 'Membership' },
-            { key: 'endDate', header: 'End Date' },
-            { key: 'status', header: 'Status' },
-            { key: 'homeLocation', header: 'Location' }
-          ]}
+          type="member"
         />
       )}
     </div>
