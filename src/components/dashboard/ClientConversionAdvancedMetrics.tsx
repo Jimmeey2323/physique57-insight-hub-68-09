@@ -75,6 +75,7 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
         acc[membership] = {
           membershipType: membership,
           totalClients: 0,
+          newMembers: 0,
           converted: 0,
           retained: 0,
           totalLTV: 0,
@@ -83,6 +84,12 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
       }
       
       acc[membership].totalClients++;
+      
+      // Count new members - only when isNew contains "New" (case sensitive)
+      if ((client.isNew || '').includes('New')) {
+        acc[membership].newMembers++;
+      }
+      
       if (client.conversionStatus === 'Converted') acc[membership].converted++;
       if (client.retentionStatus === 'Retained') acc[membership].retained++;
       acc[membership].totalLTV += client.ltv || 0;
@@ -95,7 +102,7 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
 
     const processed = Object.values(stats).map((stat: any) => ({
       ...stat,
-      conversionRate: stat.totalClients > 0 ? (stat.converted / stat.totalClients) * 100 : 0,
+      conversionRate: stat.newMembers > 0 ? (stat.converted / stat.newMembers) * 100 : 0,
       retentionRate: stat.totalClients > 0 ? (stat.retained / stat.totalClients) * 100 : 0,
       avgLTV: stat.totalClients > 0 ? stat.totalLTV / stat.totalClients : 0,
       avgConversionSpan: stat.conversionSpans.length > 0 
@@ -135,8 +142,13 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
         };
       }
       
-      acc[key].newMembers++;
-      acc[key].totalAttendees++; // Assuming each client is an attendee
+      acc[key].totalAttendees++; // Count all attendees
+      
+      // Count new members - only when isNew contains "New" (case sensitive)
+      if ((client.isNew || '').includes('New')) {
+        acc[key].newMembers++;
+      }
+      
       if (client.conversionStatus === 'Converted') acc[key].converted++;
       if (client.retentionStatus === 'Retained') acc[key].retained++;
       acc[key].totalLTV += client.ltv || 0;
@@ -149,10 +161,10 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
     return Object.values(classGroups).map((group: any) => ({
       ...group,
       conversionRate: group.newMembers > 0 ? (group.converted / group.newMembers) * 100 : 0,
-      retentionRate: group.newMembers > 0 ? (group.retained / group.newMembers) * 100 : 0,
-      avgLTV: group.newMembers > 0 ? group.totalLTV / group.newMembers : 0,
-      avgVisits: group.newMembers > 0 ? group.totalVisits / group.newMembers : 0,
-      avgClasses: group.newMembers > 0 ? group.totalClasses / group.newMembers : 0
+      retentionRate: group.totalAttendees > 0 ? (group.retained / group.totalAttendees) * 100 : 0,
+      avgLTV: group.totalAttendees > 0 ? group.totalLTV / group.totalAttendees : 0,
+      avgVisits: group.totalAttendees > 0 ? group.totalVisits / group.totalAttendees : 0,
+      avgClasses: group.totalAttendees > 0 ? group.totalClasses / group.totalAttendees : 0
     })).sort((a, b) => b.newMembers - a.newMembers);
   }, [data]);
 
@@ -164,6 +176,7 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
         acc[isNewValue] = {
           isNewType: isNewValue,
           totalClients: 0,
+          newMembers: 0,
           converted: 0,
           retained: 0,
           totalLTV: 0,
@@ -173,6 +186,12 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
       }
       
       acc[isNewValue].totalClients++;
+      
+      // For groups that are explicitly "New" types, count them as new members
+      if (isNewValue.includes('New')) {
+        acc[isNewValue].newMembers++;
+      }
+      
       if (client.conversionStatus === 'Converted') acc[isNewValue].converted++;
       if (client.retentionStatus === 'Retained') acc[isNewValue].retained++;
       acc[isNewValue].totalLTV += client.ltv || 0;
@@ -186,7 +205,10 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
 
     return Object.values(isNewGroups).map((group: any) => ({
       ...group,
-      conversionRate: group.totalClients > 0 ? (group.converted / group.totalClients) * 100 : 0,
+      // For "New" categories, use newMembers as denominator for conversion rate, otherwise use totalClients
+      conversionRate: (group.isNewType.includes('New') && group.newMembers > 0) 
+        ? (group.converted / group.newMembers) * 100 
+        : group.totalClients > 0 ? (group.converted / group.totalClients) * 100 : 0,
       retentionRate: group.totalClients > 0 ? (group.retained / group.totalClients) * 100 : 0,
       avgLTV: group.totalClients > 0 ? group.totalLTV / group.totalClients : 0,
       avgVisits: group.totalClients > 0 ? group.totalVisits / group.totalClients : 0,
@@ -205,6 +227,7 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
         acc[trainer] = {
           trainerName: trainer,
           totalClients: 0,
+          newMembers: 0,
           converted: 0,
           retained: 0,
           totalLTV: 0,
@@ -213,6 +236,12 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
       }
       
       acc[trainer].totalClients++;
+      
+      // Count new members - only when isNew contains "New" (case sensitive)
+      if ((client.isNew || '').includes('New')) {
+        acc[trainer].newMembers++;
+      }
+      
       if (client.conversionStatus === 'Converted') acc[trainer].converted++;
       if (client.retentionStatus === 'Retained') acc[trainer].retained++;
       acc[trainer].totalLTV += client.ltv || 0;
@@ -225,7 +254,7 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
 
     const processed = Object.values(stats).map((stat: any) => ({
       ...stat,
-      conversionRate: stat.totalClients > 0 ? (stat.converted / stat.totalClients) * 100 : 0,
+      conversionRate: stat.newMembers > 0 ? (stat.converted / stat.newMembers) * 100 : 0,
       retentionRate: stat.totalClients > 0 ? (stat.retained / stat.totalClients) * 100 : 0,
       avgLTV: stat.totalClients > 0 ? stat.totalLTV / stat.totalClients : 0,
       avgClassNo: stat.classNumbers.length > 0 
@@ -482,7 +511,7 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
     }
   ];
 
-  // --- Membership columns (add isNew) ---
+  // --- Membership columns ---
   const membershipColumns = [
     {
       key: 'membershipType',
@@ -490,16 +519,16 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
       className: 'font-semibold min-w-[200px]'
     },
     {
-      key: 'isNew',
-      header: 'Is New',
-      align: 'center' as const,
-      render: (_: any, row: any) => <span className="font-semibold">{row.isNew || ''}</span>
-    },
-    {
       key: 'totalClients',
       header: 'Total Clients',
       align: 'center' as const,
       render: (value: number) => <span className="font-semibold">{formatNumber(value)}</span>
+    },
+    {
+      key: 'newMembers',
+      header: 'New Members',
+      align: 'center' as const,
+      render: (value: number) => <span className="text-blue-600 font-semibold">{formatNumber(value)}</span>
     },
     {
       key: 'converted',
@@ -553,6 +582,12 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
       render: (value: number) => <span className="font-semibold">{formatNumber(value)}</span>
     },
     {
+      key: 'newMembers',
+      header: 'New Members',
+      align: 'center' as const,
+      render: (value: number) => <span className="text-blue-600 font-semibold">{formatNumber(value)}</span>
+    },
+    {
       key: 'converted',
       header: 'Converted',
       align: 'center' as const,
@@ -594,6 +629,7 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
   const membershipTotals = {
     membershipType: 'TOTAL',
     totalClients: membershipStats.reduce((sum, stat) => sum + stat.totalClients, 0),
+    newMembers: membershipStats.reduce((sum, stat) => sum + stat.newMembers, 0),
     converted: membershipStats.reduce((sum, stat) => sum + stat.converted, 0),
     conversionRate: 0,
     retained: membershipStats.reduce((sum, stat) => sum + stat.retained, 0),
@@ -601,13 +637,14 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
     avgLTV: membershipStats.reduce((sum, stat) => sum + stat.totalLTV, 0) / Math.max(membershipStats.reduce((sum, stat) => sum + stat.totalClients, 0), 1),
     avgConversionSpan: membershipStats.reduce((sum, stat) => sum + (stat.avgConversionSpan * stat.totalClients), 0) / Math.max(membershipStats.reduce((sum, stat) => sum + stat.totalClients, 0), 1)
   };
-  membershipTotals.conversionRate = membershipTotals.totalClients > 0 ? (membershipTotals.converted / membershipTotals.totalClients) * 100 : 0;
+  membershipTotals.conversionRate = membershipTotals.newMembers > 0 ? (membershipTotals.converted / membershipTotals.newMembers) * 100 : 0;
   membershipTotals.retentionRate = membershipTotals.totalClients > 0 ? (membershipTotals.retained / membershipTotals.totalClients) * 100 : 0;
 
   // Calculate totals for trainer table
   const trainerTotals = {
     trainerName: 'TOTAL',
     totalClients: trainerStats.reduce((sum, stat) => sum + stat.totalClients, 0),
+    newMembers: trainerStats.reduce((sum, stat) => sum + stat.newMembers, 0),
     converted: trainerStats.reduce((sum, stat) => sum + stat.converted, 0),
     conversionRate: 0,
     retained: trainerStats.reduce((sum, stat) => sum + stat.retained, 0),
@@ -615,7 +652,7 @@ export const ClientConversionAdvancedMetrics: React.FC<ClientConversionAdvancedM
     avgLTV: trainerStats.reduce((sum, stat) => sum + stat.totalLTV, 0) / Math.max(trainerStats.reduce((sum, stat) => sum + stat.totalClients, 0), 1),
     avgClassNo: trainerStats.reduce((sum, stat) => sum + (stat.avgClassNo * stat.totalClients), 0) / Math.max(trainerStats.reduce((sum, stat) => sum + stat.totalClients, 0), 1)
   };
-  trainerTotals.conversionRate = trainerTotals.totalClients > 0 ? (trainerTotals.converted / trainerTotals.totalClients) * 100 : 0;
+  trainerTotals.conversionRate = trainerTotals.newMembers > 0 ? (trainerTotals.converted / trainerTotals.newMembers) * 100 : 0;
   trainerTotals.retentionRate = trainerTotals.totalClients > 0 ? (trainerTotals.retained / trainerTotals.totalClients) * 100 : 0;
 
   return (

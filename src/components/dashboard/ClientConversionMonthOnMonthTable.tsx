@@ -40,6 +40,7 @@ export const ClientConversionMonthOnMonthTable: React.FC<ClientConversionMonthOn
         acc[monthKey] = {
           month: monthName,
           sortKey: monthKey,
+          totalClients: 0,
           newMembers: 0,
           converted: 0,
           retained: 0,
@@ -49,7 +50,12 @@ export const ClientConversionMonthOnMonthTable: React.FC<ClientConversionMonthOn
         };
       }
       
-      acc[monthKey].newMembers++;
+      acc[monthKey].totalClients++;
+      
+      // Count new members - only when isNew contains "New" (case sensitive)
+      if ((client.isNew || '').includes('New')) {
+        acc[monthKey].newMembers++;
+      }
       
       if (client.conversionStatus === 'Converted') {
         acc[monthKey].converted++;
@@ -77,8 +83,8 @@ export const ClientConversionMonthOnMonthTable: React.FC<ClientConversionMonthOn
       .map((stat: any) => ({
         ...stat,
         conversionRate: stat.newMembers > 0 ? (stat.converted / stat.newMembers) * 100 : 0,
-        retentionRate: stat.newMembers > 0 ? (stat.retained / stat.newMembers) * 100 : 0,
-        avgLTV: stat.newMembers > 0 ? stat.totalLTV / stat.newMembers : 0,
+        retentionRate: stat.totalClients > 0 ? (stat.retained / stat.totalClients) * 100 : 0,
+        avgLTV: stat.totalClients > 0 ? stat.totalLTV / stat.totalClients : 0,
         avgConversionSpan: stat.conversionSpans.length > 0 
           ? stat.conversionSpans.reduce((a: number, b: number) => a + b, 0) / stat.conversionSpans.length 
           : 0,
@@ -104,13 +110,24 @@ export const ClientConversionMonthOnMonthTable: React.FC<ClientConversionMonthOn
       )
     },
     {
+      key: 'totalClients',
+      header: 'Total Clients',
+      align: 'center' as const,
+      render: (value: number) => (
+        <div className="text-center">
+          <div className="text-lg font-bold text-slate-600">{formatNumber(value)}</div>
+          <div className="text-xs text-slate-500">clients</div>
+        </div>
+      )
+    },
+    {
       key: 'newMembers',
       header: 'New Members',
       align: 'center' as const,
       render: (value: number) => (
         <div className="text-center">
           <div className="text-lg font-bold text-blue-600">{formatNumber(value)}</div>
-          <div className="text-xs text-slate-500">members</div>
+          <div className="text-xs text-slate-500">new</div>
         </div>
       )
     },
@@ -206,18 +223,19 @@ export const ClientConversionMonthOnMonthTable: React.FC<ClientConversionMonthOn
   // Calculate totals
   const totals = {
     month: 'TOTAL',
+    totalClients: monthlyData.reduce((sum, row) => sum + row.totalClients, 0),
     newMembers: monthlyData.reduce((sum, row) => sum + row.newMembers, 0),
     converted: monthlyData.reduce((sum, row) => sum + row.converted, 0),
     conversionRate: 0,
     retained: monthlyData.reduce((sum, row) => sum + row.retained, 0),
     retentionRate: 0,
     totalLTV: monthlyData.reduce((sum, row) => sum + row.totalLTV, 0),
-    avgLTV: monthlyData.reduce((sum, row) => sum + row.totalLTV, 0) / Math.max(monthlyData.reduce((sum, row) => sum + row.newMembers, 0), 1),
-    avgConversionSpan: monthlyData.reduce((sum, row) => sum + (row.avgConversionSpan * row.newMembers), 0) / Math.max(monthlyData.reduce((sum, row) => sum + row.newMembers, 0), 1),
-    avgVisitsPostTrial: monthlyData.reduce((sum, row) => sum + (row.avgVisitsPostTrial * row.newMembers), 0) / Math.max(monthlyData.reduce((sum, row) => sum + row.newMembers, 0), 1)
+    avgLTV: monthlyData.reduce((sum, row) => sum + row.totalLTV, 0) / Math.max(monthlyData.reduce((sum, row) => sum + row.totalClients, 0), 1),
+    avgConversionSpan: monthlyData.reduce((sum, row) => sum + (row.avgConversionSpan * row.totalClients), 0) / Math.max(monthlyData.reduce((sum, row) => sum + row.totalClients, 0), 1),
+    avgVisitsPostTrial: monthlyData.reduce((sum, row) => sum + (row.avgVisitsPostTrial * row.totalClients), 0) / Math.max(monthlyData.reduce((sum, row) => sum + row.totalClients, 0), 1)
   };
   totals.conversionRate = totals.newMembers > 0 ? (totals.converted / totals.newMembers) * 100 : 0;
-  totals.retentionRate = totals.newMembers > 0 ? (totals.retained / totals.newMembers) * 100 : 0;
+  totals.retentionRate = totals.totalClients > 0 ? (totals.retained / totals.totalClients) * 100 : 0;
 
   return (
     <motion.div
